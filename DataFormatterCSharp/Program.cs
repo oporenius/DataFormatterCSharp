@@ -6,7 +6,8 @@ namespace DataFormatterCSharp
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            ReadFromFile rff = new ReadFromFile();
+            rff.Read();
         }
     }
 }
