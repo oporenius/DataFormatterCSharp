@@ -53,6 +53,8 @@ namespace DataFormatterCSharp
         int ascension_level;
 
         StreamWriter sw;
+        bool shouldWrite = true;
+
 
         bool first = true;
         public ReadFromFile()
@@ -93,6 +95,7 @@ namespace DataFormatterCSharp
                             if (first)
                             {
                                 first = false;
+                                
                             }
                         }
                     }
@@ -216,9 +219,11 @@ namespace DataFormatterCSharp
                 else
                 {
                     //Console.WriteLine("Token: {0}", reader.TokenType);
+                    
                 }
             }
             Print(sw);
+
             sw.Close();
         }
         public void Print(StreamWriter sw)
@@ -237,16 +242,26 @@ namespace DataFormatterCSharp
             }
             relics_string.Remove(relics_string.Length - 1, 1);
 
+            
+            if(deck_string.Length < 1 || relics_string.Length < 1)
+            {
+                shouldWrite = false;
+            }
+
             for (int i = 0; i < hp_floor.Count; i++)
             {
                 //"character,ascension_level,floor,hp,gold,path taken,deck,relics,victory"
                 StringBuilder path = new StringBuilder();
                 PathString(i, path);
 
-                var line = string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8}", character,
-                    ascension_level, i + 1, hp_floor[i], gold_floor[i], path, 
+                if (shouldWrite)
+                {
+                    shouldWrite = true;
+                    var line = string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8}", character,
+                    ascension_level, i + 1, hp_floor[i], gold_floor[i], path,
                     deck_string, relics_string, victory);
-                sw.WriteLine(line);
+                    sw.WriteLine(line);
+                }
             }
             sw.Flush();
         }
@@ -276,6 +291,11 @@ namespace DataFormatterCSharp
                     path.Append(path_act_3[l] + "|");
                 }
             }
+
+            if(path.Length < 1)
+            {
+                shouldWrite = false;
+            }
             //path.Remove(path.Length - 1, 1);
         }
 
@@ -295,6 +315,7 @@ namespace DataFormatterCSharp
             path_act_3.Clear();
             current_act = 1;
             deck.Clear();
+            shouldWrite = true;
         }
     }
 }
