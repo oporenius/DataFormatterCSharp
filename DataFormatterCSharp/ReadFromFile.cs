@@ -69,162 +69,170 @@ namespace DataFormatterCSharp
         /// </summary>
         public void Read()
         {
-            StreamReader streamReader = File.OpenText(@"C:\Users\oscar\source\repos\DataFormatterCSharp\DataFormatterCSharp\2020-09-14-23-27#972.json");
-            JsonTextReader reader = new JsonTextReader(streamReader);
-            sw = new StreamWriter(@"C:\Users\oscar\source\repos\DataFormatterCSharp\DataFormatterCSharp\testoutput.csv");
-            sw.WriteLine("character,ascension,floor,hp,gold,path,deck,relics,victory");
-            sw.Flush();
-
-            string category = "";
-            while (reader.Read())
+            int writeIndex = 1;
+            foreach(string filePath in Directory.EnumerateFiles(@"C:\Users\oscar\source\repos\DataFormatterCSharp\DataFormatterCSharp\Data", "*.json"))
             {
-                if (reader.Value != null)
+                StreamReader streamReader = File.OpenText(filePath);
+                JsonTextReader reader = new JsonTextReader(streamReader);
+                sw = new StreamWriter(@"C:\Users\oscar\source\repos\DataFormatterCSharp\DataFormatterCSharp\Outputs\training" + writeIndex + ".csv");
+                writeIndex++;
+                //sw.WriteLine("character,ascension,floor,hp,gold,path,deck,relics,victory");
+                sw.WriteLine("character,ascension,floor,hp,gold,r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12,r13,r14,r15,r16,deck,relics,victory");
+                sw.Flush();
+
+                string category = "";
+                while (reader.Read())
                 {
-                    //Console.WriteLine("Token: {0}, Value: {1}", reader.TokenType, reader.Value);
-                    if (reader.TokenType.ToString() == "PropertyName" &&
-                        (string)reader.Value != "floor" && (string)reader.Value != "key")
+                    if (reader.Value != null)
                     {
-                        category = (string)reader.Value;
-                        if (category == "event")
+                        //Console.WriteLine("Token: {0}, Value: {1}", reader.TokenType, reader.Value);
+                        if (reader.TokenType.ToString() == "PropertyName" &&
+                            (string)reader.Value != "floor" && (string)reader.Value != "key")
                         {
-                            if (!first)
+                            category = (string)reader.Value;
+                            if (category == "event")
                             {
-                                Print(sw);
-                                EmptyVariables();
+                                if (!first)
+                                {
+                                    Print(sw);
+                                    EmptyVariables();
+                                }
+                                if (first)
+                                {
+                                    first = false;
+
+                                }
                             }
-                            if (first)
+                        }
+                        else
+                        {
+
+                            if (category == "gold_per_floor")
                             {
-                                first = false;
-                                
+                                gold_floor.Add(Convert.ToInt32(reader.Value));
+                            }
+
+                            if (category == "floor_reached")
+                            {
+                                floor_reached = Convert.ToInt32(reader.Value);
+                            }
+
+                            //if(category == "items_purged")
+                            //{
+                            //    items_purged_list.Add(reader.Value);
+                            //}
+
+                            //if(category == "items_purged_floors")
+                            //{
+                            //    items_purged.Add(Convert.ToInt32(reader.Value), (string)items_purged_list[index_item_purged]);
+                            //    index_item_purged++;
+                            //}
+
+                            //add to seperate list for control when using item purchased
+                            if (category == "relics")
+                            {
+                                relics_all.Add((string)reader.Value);
+                            }
+
+                            //if (category == "relics_obtained")
+                            //{
+                            //    if(reader.TokenType.ToString() == "PropertyName")
+                            //    {
+                            //        floor_or_key = (string)reader.Value;
+                            //    }
+                            //    else
+                            //    {
+                            //        if(floor_or_key == "floor")
+                            //        {
+                            //            floor = Convert.ToInt32(reader.Value);
+                            //        }else if(floor_or_key == "key")
+                            //        {
+                            //            relics.Add(floor, (string)reader.Value);
+                            //        }
+                            //    }
+                            //}
+
+                            if (category == "character_chosen")
+                            {
+                                if ((string)reader.Value == "IRONCLAD")
+                                {
+                                    character = 0;
+                                }
+                                else if ((string)reader.Value == "SILENT")
+                                {
+                                    character = 1;
+                                }
+                                else if ((string)reader.Value == "DEFECT")
+                                {
+                                    character = 2;
+                                }
+                                else
+                                {
+                                    character = 3;
+                                }
+                            }
+
+                            if (category == "current_hp_per_floor")
+                            {
+                                hp_floor.Add(Convert.ToInt32(reader.Value));
+                            }
+
+                            if (category == "path_taken")
+                            {
+                                string v = (string)reader.Value;
+                                if (current_act == 1)
+                                {
+                                    path_act_1.Add(v);
+                                }
+                                else if (current_act == 2)
+                                {
+                                    path_act_2.Add(v);
+                                }
+                                else if (current_act == 3)
+                                {
+                                    path_act_3.Add(v);
+                                }
+                                if (v == "BOSS")
+                                {
+                                    current_act++;
+                                }
+                            }
+
+                            if (category == "victory")
+                            {
+                                if ((bool)reader.Value)
+                                {
+                                    victory = 1;
+                                }
+                                else
+                                {
+                                    victory = 0;
+                                }
+                            }
+
+                            if (category == "master_deck")
+                            {
+                                deck.Add((string)reader.Value);
+                            }
+
+                            if (category == "ascension_level")
+                            {
+                                ascension_level = Convert.ToInt32(reader.Value);
                             }
                         }
                     }
                     else
                     {
+                        //Console.WriteLine("Token: {0}", reader.TokenType);
 
-                        if (category == "gold_per_floor")
-                        {
-                            gold_floor.Add(Convert.ToInt32(reader.Value));
-                        }
-
-                        if (category == "floor_reached")
-                        {
-                            floor_reached = Convert.ToInt32(reader.Value);
-                        }
-
-                        //if(category == "items_purged")
-                        //{
-                        //    items_purged_list.Add(reader.Value);
-                        //}
-
-                        //if(category == "items_purged_floors")
-                        //{
-                        //    items_purged.Add(Convert.ToInt32(reader.Value), (string)items_purged_list[index_item_purged]);
-                        //    index_item_purged++;
-                        //}
-
-                        //add to seperate list for control when using item purchased
-                        if (category == "relics")
-                        {
-                            relics_all.Add((string)reader.Value);
-                        }
-
-                        //if (category == "relics_obtained")
-                        //{
-                        //    if(reader.TokenType.ToString() == "PropertyName")
-                        //    {
-                        //        floor_or_key = (string)reader.Value;
-                        //    }
-                        //    else
-                        //    {
-                        //        if(floor_or_key == "floor")
-                        //        {
-                        //            floor = Convert.ToInt32(reader.Value);
-                        //        }else if(floor_or_key == "key")
-                        //        {
-                        //            relics.Add(floor, (string)reader.Value);
-                        //        }
-                        //    }
-                        //}
-
-                        if (category == "character_chosen")
-                        {
-                            if ((string)reader.Value == "IRONCLAD")
-                            {
-                                character = 0;
-                            }
-                            else if ((string)reader.Value == "SILENT")
-                            {
-                                character = 1;
-                            }
-                            else if ((string)reader.Value == "DEFECT")
-                            {
-                                character = 2;
-                            }
-                            else
-                            {
-                                character = 3;
-                            }
-                        }
-
-                        if (category == "current_hp_per_floor")
-                        {
-                            hp_floor.Add(Convert.ToInt32(reader.Value));
-                        }
-
-                        if (category == "path_taken")
-                        {
-                            string v = (string)reader.Value;
-                            if (current_act == 1)
-                            {
-                                path_act_1.Add(v);
-                            }
-                            else if (current_act == 2)
-                            {
-                                path_act_2.Add(v);
-                            }
-                            else if (current_act == 3)
-                            {
-                                path_act_3.Add(v);
-                            }
-                            if (v == "BOSS")
-                            {
-                                current_act++;
-                            }
-                        }
-
-                        if (category == "victory")
-                        {
-                            if ((bool)reader.Value)
-                            {
-                                victory = 1;
-                            }
-                            else
-                            {
-                                victory = 0;
-                            }
-                        }
-
-                        if (category == "master_deck")
-                        {
-                            deck.Add((string)reader.Value);
-                        }
-
-                        if (category == "ascension_level")
-                        {
-                            ascension_level = Convert.ToInt32(reader.Value);
-                        }
                     }
                 }
-                else
-                {
-                    //Console.WriteLine("Token: {0}", reader.TokenType);
-                    
-                }
-            }
-            Print(sw);
+                Print(sw);
 
-            sw.Close();
+                sw.Close();
+            }
+
+           
         }
         public void Print(StreamWriter sw)
         {
@@ -257,7 +265,7 @@ namespace DataFormatterCSharp
                 if (shouldWrite)
                 {
                     shouldWrite = true;
-                    var line = string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8}", character,
+                    var line = string.Format("{0},{1},{2},{3},{4},{5}{6},{7},{8}", character,
                     ascension_level, i + 1, hp_floor[i], gold_floor[i], path,
                     deck_string, relics_string, victory);
                     sw.WriteLine(line);
@@ -269,26 +277,48 @@ namespace DataFormatterCSharp
         private void PathString(int i, StringBuilder path)
         {
             
-            for (int j = 0; j < path_act_1.Count; j++)
+            for (int j = 0; j < 16; j++)
             {
-                path.Append(path_act_1[j] + "|");
-            }
-
-            if (i > path_act_1.Count)
-            {
-                path.Clear();
-                for (int k = 0; k < path_act_2.Count; k++)
+                if(path_act_1.Count > j)
                 {
-                    path.Append(path_act_2[k] + "|");
+                    path.Append(path_act_1[j] + ",");
+                }
+                else
+                {
+                    path.Append("*,");
                 }
             }
 
-            if (i > (path_act_1.Count + path_act_2.Count))
+            if (i > 16)
             {
                 path.Clear();
-                for (int l = 0; l < path_act_3.Count; l++)
+                for (int k = 0; k < 16; k++)
                 {
-                    path.Append(path_act_3[l] + "|");
+                    if(path_act_2.Count > k)
+                    {
+                        path.Append(path_act_2[k] + ",");
+
+                    }
+                    else
+                    {
+                        path.Append("*,");
+                    }
+                }
+            }
+
+            if (i > 32)
+            {
+                path.Clear();
+                for (int l = 0; l < 16; l++)
+                {
+                    if (path_act_3.Count > l)
+                    {
+                        path.Append(path_act_3[l] + ",");
+                    }
+                    else
+                    {
+                        path.Append("*,");
+                    }
                 }
             }
 
